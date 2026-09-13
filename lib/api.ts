@@ -38,9 +38,22 @@ export async function api<T>(
     throw new Error("Unauthorized");
   }
 
-  const json = await res.json();
+  const text = await res.text();
+  let json: any = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    throw new Error(text?.slice(0, 180) || `Request failed (${res.status})`);
+  }
   if (!res.ok) {
-    throw new Error(json.detail || json.message || "Request failed");
+    const detail = json?.detail || json?.message;
+    throw new Error(
+      typeof detail === "string"
+        ? detail
+        : Array.isArray(detail)
+          ? detail.map((d: any) => d.msg || d).join(", ")
+          : `Request failed (${res.status})`,
+    );
   }
   return json as ApiResponse<T>;
 }

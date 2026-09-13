@@ -4,7 +4,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import extract, func, or_
+from sqlalchemy import func, or_
 from sqlalchemy.orm import joinedload
 
 from app.auth import CurrentUser, DbSession, authenticate_user, create_access_token, hash_password
@@ -110,17 +110,16 @@ def dashboard(db: DbSession, user: CurrentUser):
     elif user.role == "pm":
         projects_q = projects_q.filter(Project.pm_user_id == user.id)
 
-    recent = (
-        projects_q.options(
-            joinedload(Project.business),
-            joinedload(Project.creator),
-            joinedload(Project.milestones),
-            joinedload(Project.tasks),
-        )
-        .order_by(Project.id.desc())
-        .limit(6)
-        .all()
-    )
+    # Materialize scoped projects once — avoids SQLAlchemy query-composition
+    # issues with with_entities/group_by reuse on Postgres.
+    scoped_projects = projects_q.options(
+        joinedload(Project.business),
+        joinedload(Project.creator),
+        joinedload(Project.milestones),
+        joinedload(Project.tasks),
+    ).order_by(Project.id.desc()).all()
+
+    recent = scoped_projects[:6]
     invoices = (
         db.query(Invoice)
         .options(joinedload(Invoice.project), joinedload(Invoice.business))
@@ -135,86 +134,98 @@ def dashboard(db: DbSession, user: CurrentUser):
         Payment.direction == "payout", Payment.status.in_(["pending", "escrow"])
     ).scalar()
 
-    status_rows = (
-        projects_q.with_entities(Project.status, func.count(Project.id))
-        .group_by(Project.status)
-        .all()
-    )
-    category_rows = (
-        projects_q.with_entities(
-            func.coalesce(Project.category, "general"),
-            func.count(Project.id),
-        )
-        .group_by(func.coalesce(Project.category, "general"))
-        .all()
-    )
-    creator_avail = (
-        db.query(Creator.availability, func.count(Creator.id))
-        .filter(Creator.is_active.is_(True))
-        .group_by(Creator.availability)
-        .all()
-    )
-    invoice_status = (
-        db.query(Invoice.status, func.count(Invoice.id))
-        .group_by(Invoice.status)
-        .all()
-    )
+    status_counts: dict[str, int] = {}
+    category_counts: dict[str, int] = {}
+    for p in scoped_projects:
+        status_counts[p.status or "unknown"] = status_counts.get(p.status or "unknown", 0) + 1
+        cat = (p.category or "general").strip() or "general"
+        category_counts[cat] = category_counts.get(cat, 0) + 1
 
+    creator_rows = db.query(Creator).filter(Creator.is_active.is_(True)).all()
+    creator_avail: dict[str, int] = {}
+    for c in creator_rows:
+        key = c.availability or "unknown"
+        creator_avail[key] = creator_avail.get(key, 0) + 1
+
+    invoice_rows = db.query(Invoice).all()
+    invoice_status: dict[str, int] = {}
+    for inv in invoice_rows:
+        key = inv.status or "unknown"
+        invoice_status[key] = invoice_status.get(key, 0) + 1
+
+    # Cashflow: aggregate in Python (avoids extract()/timezone quirks)
+    month_keys: list[tuple[int, int, str]] = []
     now = datetime.utcnow()
-    cashflow: list[CashflowPoint] = []
-    for offset in range(5, -1, -1):
-        month = now.month - offset
-        year = now.year
-        while month <= 0:
-            month += 12
-            year -= 1
-        inbound = db.query(func.coalesce(func.sum(Payment.amount), 0)).filter(
-            Payment.direction == "inbound",
-            extract("year", Payment.created_at) == year,
-            extract("month", Payment.created_at) == month,
-        ).scalar()
-        payout = db.query(func.coalesce(func.sum(Payment.amount), 0)).filter(
-            Payment.direction == "payout",
-            extract("year", Payment.created_at) == year,
-            extract("month", Payment.created_at) == month,
-        ).scalar()
-        label = datetime(year, month, 1).strftime("%b")
-        cashflow.append(
-            CashflowPoint(
-                name=label,
-                inbound=float(inbound or 0),
-                payout=float(payout or 0),
-            )
-        )
+    y, m = now.year, now.month
+    for _ in range(6):
+        month_keys.append((y, m, datetime(y, m, 1).strftime("%b")))
+        m -= 1
+        if m <= 0:
+            m = 12
+            y -= 1
+    month_keys.reverse()
 
-    delivery_rows = (
-        projects_q.filter(
-            Project.status.in_(["assigned", "in_progress", "qa", "client_review", "delivered"])
-        )
-        .order_by(Project.progress_pct.desc())
-        .limit(8)
-        .all()
+    cash_map = { (y, m): {"inbound": 0.0, "payout": 0.0} for y, m, _ in month_keys }
+    for pay in db.query(Payment).all():
+        if not pay.created_at:
+            continue
+        key = (pay.created_at.year, pay.created_at.month)
+        if key not in cash_map:
+            continue
+        amt = float(pay.amount or 0)
+        if pay.direction == "inbound":
+            cash_map[key]["inbound"] += amt
+        elif pay.direction == "payout":
+            cash_map[key]["payout"] += amt
+
+    cashflow = [
+        CashflowPoint(name=label, inbound=cash_map[(y, m)]["inbound"], payout=cash_map[(y, m)]["payout"])
+        for y, m, label in month_keys
+    ]
+
+    active_statuses = {"assigned", "in_progress", "qa", "client_review", "delivered"}
+    delivery_rows = sorted(
+        [p for p in scoped_projects if p.status in active_statuses],
+        key=lambda p: p.progress_pct or 0,
+        reverse=True,
+    )[:8]
+
+    avg_progress = (
+        round(sum(p.progress_pct or 0 for p in scoped_projects) / len(scoped_projects), 1)
+        if scoped_projects
+        else 0.0
     )
-    scoped_ids = [row[0] for row in projects_q.with_entities(Project.id).all()]
-    if scoped_ids:
-        avg_progress = (
-            db.query(func.coalesce(func.avg(Project.progress_pct), 0))
-            .filter(Project.id.in_(scoped_ids))
-            .scalar()
+
+    pipeline_active = {
+        "intake", "quoting", "matching", "assigned", "in_progress", "qa", "client_review"
+    }
+
+    try:
+        assignments_open = (
+            db.query(Assignment)
+            .filter(Assignment.status.in_(["shortlisted", "offered"]))
+            .count()
         )
-    else:
-        avg_progress = 0
+    except Exception:
+        assignments_open = 0
+
+    try:
+        quality_pending = (
+            db.query(QualityReview)
+            .filter(QualityReview.status.in_(["pending", "revision_requested"]))
+            .count()
+        )
+    except Exception:
+        quality_pending = 0
 
     data = DashboardOut(
-        projects_total=projects_q.count(),
-        projects_active=projects_q.filter(
-            Project.status.in_(["intake", "quoting", "matching", "assigned", "in_progress", "qa", "client_review"])
-        ).count(),
-        projects_in_qa=projects_q.filter(Project.status.in_(["qa", "client_review"])).count(),
+        projects_total=len(scoped_projects),
+        projects_active=sum(1 for p in scoped_projects if p.status in pipeline_active),
+        projects_in_qa=sum(1 for p in scoped_projects if p.status in {"qa", "client_review"}),
         businesses=db.query(Business).filter(Business.is_active.is_(True)).count(),
-        creators=db.query(Creator).filter(Creator.is_active.is_(True)).count(),
-        creators_available=db.query(Creator).filter(Creator.availability == "available").count(),
-        invoices_open=db.query(Invoice).filter(Invoice.status.in_(["draft", "sent"])).count(),
+        creators=len(creator_rows),
+        creators_available=creator_avail.get("available", 0),
+        invoices_open=sum(1 for inv in invoice_rows if inv.status in {"draft", "sent"}),
         revenue_collected=Decimal(str(revenue or 0)),
         payouts_pending=Decimal(str(payouts_pending or 0)),
         unread_notifications=db.query(Notification).filter(
@@ -222,24 +233,26 @@ def dashboard(db: DbSession, user: CurrentUser):
         ).count(),
         recent_projects=[ProjectOut.model_validate(p) for p in recent],
         recent_invoices=[InvoiceOut.model_validate(i) for i in invoices],
-        projects_by_status=[ChartSlice(name=s or "unknown", value=float(c)) for s, c in status_rows],
-        projects_by_category=[ChartSlice(name=c or "general", value=float(n)) for c, n in category_rows],
-        creators_by_availability=[
-            ChartSlice(name=a or "unknown", value=float(n)) for a, n in creator_avail
+        projects_by_status=[
+            ChartSlice(name=k, value=float(v)) for k, v in sorted(status_counts.items())
         ],
-        invoices_by_status=[ChartSlice(name=s or "unknown", value=float(n)) for s, n in invoice_status],
+        projects_by_category=[
+            ChartSlice(name=k, value=float(v)) for k, v in sorted(category_counts.items())
+        ],
+        creators_by_availability=[
+            ChartSlice(name=k, value=float(v)) for k, v in sorted(creator_avail.items())
+        ],
+        invoices_by_status=[
+            ChartSlice(name=k, value=float(v)) for k, v in sorted(invoice_status.items())
+        ],
         cashflow=cashflow,
         delivery_progress=[
             ProgressPoint(name=p.code, progress=float(p.progress_pct or 0), status=p.status)
             for p in delivery_rows
         ],
-        avg_progress=round(float(avg_progress or 0), 1),
-        assignments_open=db.query(Assignment)
-        .filter(Assignment.status.in_(["shortlisted", "offered"]))
-        .count(),
-        quality_pending=db.query(QualityReview)
-        .filter(QualityReview.status.in_(["pending", "revision_requested"]))
-        .count(),
+        avg_progress=avg_progress,
+        assignments_open=assignments_open,
+        quality_pending=quality_pending,
     )
     return ApiResponse(data=data)
 
