@@ -55,13 +55,13 @@ export default function ProjectDetailPage() {
         title={project.title}
         subtitle={`${project.code} · ${project.business?.name || "Client"} · ${project.category || "general"}`}
         actions={
-          <div className="flex gap-2">
-            <Select value={status} onChange={(e) => setStatus(e.target.value)} className="w-40">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <Select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full sm:w-40">
               {["intake", "quoting", "matching", "assigned", "in_progress", "qa", "client_review", "delivered", "archived"].map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </Select>
-            <Button variant="secondary" onClick={updateStatus}>Update Status</Button>
+            <Button variant="secondary" className="w-full sm:w-auto" onClick={updateStatus}>Update Status</Button>
           </div>
         }
       />
@@ -136,9 +136,9 @@ export default function ProjectDetailPage() {
                 </div>
               ))}
             </div>
-            <form className="flex gap-2" onSubmit={sendMessage}>
-              <Input value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Write a message..." required />
-              <Button type="submit">Send</Button>
+            <form className="flex flex-col gap-2 sm:flex-row" onSubmit={sendMessage}>
+              <Input className="min-w-0 flex-1" value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Write a message..." required />
+              <Button type="submit" className="w-full sm:w-auto">Send</Button>
             </form>
           </Card>
         </div>

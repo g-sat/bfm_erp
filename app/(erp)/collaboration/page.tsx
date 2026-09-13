@@ -51,9 +51,9 @@ export default function CollaborationPage() {
             </div>
           ))}
         </div>
-        <form className="flex gap-2" onSubmit={send}>
-          <Input value={body} onChange={(e) => setBody(e.target.value)} placeholder="Discussion update..." required />
-          <Button type="submit">Send</Button>
+        <form className="flex flex-col gap-2 sm:flex-row" onSubmit={send}>
+          <Input className="min-w-0 flex-1" value={body} onChange={(e) => setBody(e.target.value)} placeholder="Discussion update..." required />
+          <Button type="submit" className="w-full sm:w-auto">Send</Button>
         </form>
       </Card>
     </div>

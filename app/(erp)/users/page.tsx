@@ -116,7 +116,7 @@ export default function UsersPage() {
       <PageHeader
         title="Users & Roles"
         subtitle="Create logins and assign platform roles (Admin, Business, Creative, PM)"
-        actions={<Button onClick={openCreate}>Add User</Button>}
+        actions={<Button className="w-full sm:w-auto" onClick={openCreate}>Add User</Button>}
       />
       {error ? <p className="mb-3 text-sm text-rose-600">{error}</p> : null}
 

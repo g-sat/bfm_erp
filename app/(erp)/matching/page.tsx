@@ -57,7 +57,7 @@ export default function MatchingPage() {
         subtitle="3.0 — analyze requirements, shortlist, verify, assign"
       />
       {error ? <p className="mb-3 text-sm text-rose-600">{error}</p> : null}
-      <Card className="mb-4 grid gap-3 p-4 md:grid-cols-3">
+      <Card className="mb-4 grid gap-3 p-4 sm:grid-cols-2 md:grid-cols-3">
         <Select value={projectId} onChange={(e) => setProjectId(e.target.value)}>
           <option value="">Select project</option>
           {projects.map((p) => <option key={p.id} value={p.id}>{p.code} — {p.title}</option>)}
@@ -66,7 +66,7 @@ export default function MatchingPage() {
           <option value="">Select creative</option>
           {creators.map((c) => <option key={c.id} value={c.id}>{c.display_name} ({c.categories})</option>)}
         </Select>
-        <Button disabled={!projectId || !creatorId} onClick={shortlist}>Shortlist Creative</Button>
+        <Button className="sm:col-span-2 md:col-span-1" disabled={!projectId || !creatorId} onClick={shortlist}>Shortlist Creative</Button>
       </Card>
 
       <div className="mb-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -92,16 +92,18 @@ export default function MatchingPage() {
               <td className="px-3 py-2">{a.match_score}</td>
               <td className="px-3 py-2">{a.offer_amount ? money(a.offer_amount) : "—"}</td>
               <td className="px-3 py-2"><Badge>{a.status}</Badge></td>
-              <td className="px-3 py-2 space-x-2">
-                {a.status === "shortlisted" ? (
-                  <Button variant="secondary" onClick={() => offer(a.id)}>Send Offer</Button>
-                ) : null}
-                {a.status === "offered" ? (
-                  <>
-                    <Button onClick={() => respond(a.id, true)}>Accept</Button>
-                    <Button variant="danger" onClick={() => respond(a.id, false)}>Decline</Button>
-                  </>
-                ) : null}
+              <td className="px-3 py-2">
+                <div className="flex flex-wrap gap-2">
+                  {a.status === "shortlisted" ? (
+                    <Button variant="secondary" onClick={() => offer(a.id)}>Send Offer</Button>
+                  ) : null}
+                  {a.status === "offered" ? (
+                    <>
+                      <Button onClick={() => respond(a.id, true)}>Accept</Button>
+                      <Button variant="danger" onClick={() => respond(a.id, false)}>Decline</Button>
+                    </>
+                  ) : null}
+                </div>
               </td>
             </tr>
           ))}

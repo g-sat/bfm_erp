@@ -46,7 +46,7 @@ export default function LoginPage() {
       <div className="absolute right-4 top-4 z-20">
         <ThemeToggle />
       </div>
-      <Card className="relative z-10 w-full max-w-md border-[var(--erp-border)] p-8 shadow-xl">
+      <Card className="relative z-10 w-full max-w-md border-[var(--erp-border)] p-5 shadow-xl sm:p-8">
         <div className="mb-6">
           <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[var(--erp-accent)] text-sm font-bold text-white">
             BF

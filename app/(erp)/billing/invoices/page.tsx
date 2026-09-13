@@ -41,12 +41,12 @@ export default function InvoicesPage() {
               <td className="px-3 py-2">
                 <Badge tone={inv.status === "paid" ? "green" : "amber"}>{inv.status}</Badge>
               </td>
-              <td className="px-3 py-2 space-x-2">
+              <td className="px-3 py-2">
                 {inv.status !== "paid" ? (
-                  <>
+                  <div className="flex flex-wrap gap-2">
                     <Button variant="secondary" onClick={() => pay(inv.id, "stripe")}>Stripe</Button>
                     <Button variant="secondary" onClick={() => pay(inv.id, "razorpay")}>Razorpay</Button>
-                  </>
+                  </div>
                 ) : "—"}
               </td>
             </tr>

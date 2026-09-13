@@ -27,9 +27,9 @@ export default function ProjectsPage() {
         subtitle="2.0 Intake → 5.0 delivery lifecycle"
         actions={
           <>
-            <Input className="w-48" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
-            <Button variant="secondary" onClick={() => load()}>Search</Button>
-            <Link href="/projects/new"><Button>New Intake</Button></Link>
+            <Input className="w-full min-w-0 sm:w-48" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Button variant="secondary" className="w-full sm:w-auto" onClick={() => load()}>Search</Button>
+            <Link href="/projects/new" className="w-full sm:w-auto"><Button className="w-full">New Intake</Button></Link>
           </>
         }
       />

@@ -82,12 +82,12 @@ export function MasterCrudPage({
               placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-48"
+              className="w-full min-w-0 sm:w-48"
             />
-            <Button variant="secondary" onClick={() => load()}>
+            <Button variant="secondary" onClick={() => load()} className="w-full sm:w-auto">
               Search
             </Button>
-            <Button onClick={() => setShowForm((s) => !s)}>
+            <Button onClick={() => setShowForm((s) => !s)} className="w-full sm:w-auto">
               {showForm ? "Close" : "Add New"}
             </Button>
           </>
