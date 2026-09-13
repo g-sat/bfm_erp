@@ -1,6 +1,13 @@
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+_DEFAULT_CORS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:4000",
+    "http://127.0.0.1:4000",
+]
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -18,18 +25,24 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./bfm_erp.db"
     company_code: str = "BFM"
     company_name: str = "BOLDFRAME"
-    cors_origins: list[str] = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:4000",
-        "http://127.0.0.1:4000",
-    ]
+    # Comma-separated env: CORS_ORIGINS=https://app.vercel.app,http://localhost:3000
+    cors_origins: list[str] = list(_DEFAULT_CORS)
 
     @field_validator("database_url", mode="before")
     @classmethod
     def empty_url_falls_back_to_sqlite(cls, value: object) -> object:
         if value is None or (isinstance(value, str) and not value.strip()):
             return "sqlite:///./bfm_erp.db"
+        return value
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value: object) -> object:
+        if value is None:
+            return list(_DEFAULT_CORS)
+        if isinstance(value, str):
+            origins = [o.strip() for o in value.split(",") if o.strip()]
+            return origins or list(_DEFAULT_CORS)
         return value
 
     @property
