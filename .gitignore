@@ -32,6 +32,14 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# backend
+backend/.venv/
+backend/.env
+backend/**/*.db
+backend/**/__pycache__/
+*.db
 
 # vercel
 .vercel
@@ -39,3 +47,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.neon
