@@ -336,6 +336,23 @@ class ReviewOut(ReviewIn):
     from_user_id: int
 
 
+class ChartSlice(BaseModel):
+    name: str
+    value: float
+
+
+class CashflowPoint(BaseModel):
+    name: str
+    inbound: float
+    payout: float
+
+
+class ProgressPoint(BaseModel):
+    name: str
+    progress: float
+    status: str
+
+
 class DashboardOut(BaseModel):
     projects_total: int
     projects_active: int
@@ -349,3 +366,12 @@ class DashboardOut(BaseModel):
     unread_notifications: int
     recent_projects: List[ProjectOut] = []
     recent_invoices: List[InvoiceOut] = []
+    projects_by_status: List[ChartSlice] = []
+    projects_by_category: List[ChartSlice] = []
+    creators_by_availability: List[ChartSlice] = []
+    invoices_by_status: List[ChartSlice] = []
+    cashflow: List[CashflowPoint] = []
+    delivery_progress: List[ProgressPoint] = []
+    avg_progress: float = 0
+    assignments_open: int = 0
+    quality_pending: int = 0

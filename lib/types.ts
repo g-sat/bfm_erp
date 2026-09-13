@@ -196,6 +196,10 @@ export type Notification = {
   link?: string | null;
 };
 
+export type ChartSlice = { name: string; value: number };
+export type CashflowPoint = { name: string; inbound: number; payout: number };
+export type ProgressPoint = { name: string; progress: number; status: string };
+
 export type Dashboard = {
   projects_total: number;
   projects_active: number;
@@ -209,4 +213,13 @@ export type Dashboard = {
   unread_notifications: number;
   recent_projects: Project[];
   recent_invoices: Invoice[];
+  projects_by_status?: ChartSlice[];
+  projects_by_category?: ChartSlice[];
+  creators_by_availability?: ChartSlice[];
+  invoices_by_status?: ChartSlice[];
+  cashflow?: CashflowPoint[];
+  delivery_progress?: ProgressPoint[];
+  avg_progress?: number;
+  assignments_open?: number;
+  quality_pending?: number;
 };
