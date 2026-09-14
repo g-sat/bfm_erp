@@ -2,121 +2,154 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import { motion } from "framer-motion";
 
+const LaserFlow = dynamic(() => import("./laser-flow"), { ssr: false });
 const HeroScene = dynamic(
   () => import("./hero-scene").then((m) => m.HeroScene),
   {
     ssr: false,
-    loading: () => (
-      <div className="h-full min-h-[280px] w-full animate-pulse rounded-2xl bg-[#fff1f0]" />
-    ),
+    loading: () => <div className="h-full w-full animate-pulse rounded-3xl bg-white/5" />,
   },
 );
 
-const WORKFLOW = [
-  "Brief",
-  "Matching",
-  "Creative Team",
-  "Project Manager",
-  "Quality Review",
-  "Delivery",
-];
-
 export function MarketingHero() {
   return (
-    <section className="relative overflow-hidden pt-24 sm:pt-28">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(225,6,0,0.08),transparent_45%),radial-gradient(ellipse_at_80%_20%,rgba(0,0,0,0.04),transparent_40%)]" />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:pb-20">
-        <div>
+    <section className="relative min-h-dvh overflow-hidden pt-20">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[#050505]" />
+        <div className="absolute inset-0 opacity-80">
+          <LaserFlow
+            color="#e10600"
+            horizontalBeamOffset={0.12}
+            verticalBeamOffset={0.08}
+            flowSpeed={0.28}
+            fogIntensity={0.45}
+            wispIntensity={0.9}
+            mouseTiltStrength={0.35}
+          />
+        </div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_10%,rgba(5,5,5,0.55)_55%,#050505_100%)]" />
+        <div className="absolute left-6 top-24 h-10 w-10 border-l border-t border-white/25 sm:left-10" />
+        <div className="absolute right-6 top-24 h-10 w-10 border-r border-t border-white/25 sm:right-10" />
+        <div className="absolute bottom-10 left-6 h-10 w-10 border-b border-l border-white/25 sm:left-10" />
+        <div className="absolute bottom-10 right-6 h-10 w-10 border-b border-r border-white/25 sm:right-10" />
+      </div>
+
+      <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-20 pt-10 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-8 lg:pb-28 lg:pt-16">
+        <div className="relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55 }}
-            className="inline-flex items-center gap-2 rounded-full bg-[#fff1f0] px-3 py-1 text-[12px] font-medium text-[#e10600]"
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 rounded-full border border-[#e10600]/40 bg-[#e10600]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ff6b63]"
           >
-            <span aria-hidden>✦</span> Not another freelance marketplace.
+            <Play size={10} fill="currentColor" /> Transmission live
           </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 22 }}
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.08 }}
-            className="mt-5 max-w-xl text-[2.35rem] font-semibold leading-[1.08] tracking-[-0.03em] text-neutral-950 sm:text-5xl lg:text-[3.35rem]"
+            transition={{ delay: 0.08, duration: 0.55 }}
+            className="mt-6 text-xs font-medium uppercase tracking-[0.35em] text-white/45"
+          >
+            Creative services OS
+          </motion.p>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12, duration: 0.7 }}
+            className="mt-4 max-w-2xl font-[family-name:var(--font-display)] text-[clamp(2.6rem,7vw,5.4rem)] font-semibold leading-[0.95] tracking-[-0.04em] text-white"
           >
             Creative work,{" "}
-            <span className="text-[#e10600]">managed</span> from brief to delivery.
+            <span className="bg-gradient-to-b from-[#ff4d45] via-[#e10600] to-[#7a0300] bg-clip-text text-transparent [text-shadow:0_0_40px_rgba(225,6,0,0.45)]">
+              managed
+            </span>{" "}
+            from brief to delivery.
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.16 }}
-            className="mt-5 max-w-lg text-[15px] leading-relaxed text-neutral-600 sm:text-base"
+            transition={{ delay: 0.22, duration: 0.55 }}
+            className="mt-6 max-w-lg text-base leading-relaxed text-white/60 sm:text-lg"
           >
-            Tell us what you need. We match you with verified creative talent and manage the
-            project from start to finish.
+            Not another freelance marketplace. BoldFrame matches verified talent, runs the
+            project, and ships quality — like an operating system for creative teams.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.24 }}
-            className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
+            transition={{ delay: 0.3, duration: 0.55 }}
+            className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center"
           >
             <Link
               href="/start"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#e10600] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_32px_rgba(225,6,0,0.3)] transition hover:bg-[#c40500]"
+              className="group inline-flex items-center justify-center gap-2 rounded-full bg-[#e10600] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_0_40px_rgba(225,6,0,0.45)] transition hover:bg-[#ff1f16]"
             >
-              Start a Project <ArrowRight size={16} />
+              Start a Project
+              <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
             </Link>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center rounded-xl border border-neutral-200 bg-white px-5 py-3 text-sm font-semibold text-neutral-900 transition hover:border-neutral-300 hover:bg-neutral-50"
+              className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur transition hover:border-white/30 hover:bg-white/10"
             >
-              Log in
+              Sign in to workspace
             </Link>
           </motion.div>
 
-          <motion.p
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="mt-5 text-[12px] tracking-wide text-neutral-500"
+            transition={{ delay: 0.45 }}
+            className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-[12px] uppercase tracking-[0.2em] text-white/35"
           >
-            Verified Talent · Managed Execution · Quality Control
-          </motion.p>
+            <span>Verified talent</span>
+            <span className="text-[#e10600]">•</span>
+            <span>Managed execution</span>
+            <span className="text-[#e10600]">•</span>
+            <span>Quality control</span>
+          </motion.div>
         </div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 20 }}
+          initial={{ opacity: 0, scale: 0.94, y: 24 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.15 }}
-          className="relative"
+          transition={{ delay: 0.2, duration: 0.75 }}
+          className="relative z-10"
         >
-          <div className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-[0_30px_80px_rgba(0,0,0,0.08)]">
-            <div className="h-[240px] sm:h-[280px] lg:h-[300px]">
+          <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/40 shadow-[0_40px_120px_rgba(225,6,0,0.18)] backdrop-blur-xl">
+            <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-4 py-3 text-[10px] uppercase tracking-[0.2em] text-white/40">
+              <span>Live workflow</span>
+              <span className="flex items-center gap-1.5 text-[#ff6b63]">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#e10600]" />
+                Online
+              </span>
+            </div>
+            <div className="h-[300px] sm:h-[340px] lg:h-[380px]">
               <HeroScene />
             </div>
-            <div className="border-t border-neutral-100 px-5 py-4 sm:px-6">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
-                The BoldFrame workflow
+            <div className="border-t border-white/10 px-5 py-4">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/35">
+                The BoldFrame stack
               </p>
-              <ol className="mt-3 space-y-2">
-                {WORKFLOW.map((step, i) => (
-                  <li key={step} className="flex items-center gap-3 text-sm text-neutral-800">
-                    <span className="w-7 font-semibold tabular-nums text-neutral-950">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span className="flex-1">{step}</span>
-                    <span className="h-px flex-1 max-w-[40%] bg-neutral-200" />
-                    {i === WORKFLOW.length - 1 ? (
-                      <Check size={14} className="text-[#e10600]" strokeWidth={3} />
-                    ) : null}
-                  </li>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {["Brief", "Match", "Produce", "QA", "Deliver"].map((step, i) => (
+                  <span
+                    key={step}
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${
+                      i === 4
+                        ? "bg-[#e10600] text-white shadow-[0_0_20px_rgba(225,6,0,0.45)]"
+                        : "border border-white/10 bg-white/5 text-white/70"
+                    }`}
+                  >
+                    {step}
+                  </span>
                 ))}
-              </ol>
+              </div>
             </div>
           </div>
         </motion.div>

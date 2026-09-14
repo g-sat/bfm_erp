@@ -1,15 +1,11 @@
 import { MarketingHero } from "@/components/marketing/hero";
-import { MarketingStats } from "@/components/marketing/stats";
-import { MarketingProblem } from "@/components/marketing/problem";
-import { MarketingServices } from "@/components/marketing/services";
+import { MarketingBody } from "@/components/marketing/body";
 
 export default function LandingPage() {
   return (
-    <main>
+    <main className="overflow-x-hidden bg-[#050505]">
       <MarketingHero />
-      <MarketingStats />
-      <MarketingProblem />
-      <MarketingServices />
+      <MarketingBody />
     </main>
   );
 }

@@ -83,13 +83,13 @@ export default function StartProjectPage() {
   }
 
   return (
-    <main className="min-h-dvh bg-[#fafafa] pt-24 pb-16">
+    <main className="min-h-dvh bg-[#050505] pt-24 pb-16">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-center text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
+          <h1 className="text-center font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             Start a project with BoldFrame.
           </h1>
-          <p className="mx-auto mt-3 max-w-lg text-center text-sm text-neutral-600 sm:text-base">
+          <p className="mx-auto mt-3 max-w-lg text-center text-sm text-white/55 sm:text-base">
             Create your workspace. You&apos;ll brief your first project right after.
           </p>
         </motion.div>
@@ -99,7 +99,7 @@ export default function StartProjectPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08 }}
-          className="mt-8 rounded-2xl border border-neutral-200 bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.05)] sm:p-8"
+          className="mt-8 rounded-2xl border border-white/10 bg-[#0c0c0c] p-5 shadow-[0_30px_80px_rgba(225,6,0,0.12)] sm:p-8"
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Company name">
@@ -174,8 +174,8 @@ export default function StartProjectPage() {
                 onChange={(v) => setBiz({ ...biz, password: v })}
               />
             </Field>
-            <div className="sm:col-span-2 mt-2 border-t border-neutral-100 pt-4">
-              <p className="mb-3 text-sm font-semibold text-neutral-900">First project (optional)</p>
+            <div className="sm:col-span-2 mt-2 border-t border-white/10 pt-4">
+              <p className="mb-3 text-sm font-semibold text-white">First project (optional)</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Project title">
                   <Input
@@ -207,7 +207,7 @@ export default function StartProjectPage() {
                 <div className="sm:col-span-2">
                   <Field label="Brief">
                     <textarea
-                      className="min-h-[88px] w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none ring-[#e10600] placeholder:text-neutral-400 focus:ring-2"
+                      className="min-h-[88px] w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none ring-[#e10600] placeholder:text-white/30 focus:ring-2"
                       placeholder="Goals, references, timeline..."
                       value={brief.details}
                       onChange={(e) => setBrief({ ...brief, details: e.target.value })}
@@ -230,9 +230,9 @@ export default function StartProjectPage() {
           >
             {loading ? "Creating workspace…" : "Create workspace"}
           </button>
-          <p className="mt-4 text-center text-sm text-neutral-500">
+          <p className="mt-4 text-center text-sm text-white/45">
             Already have an account?{" "}
-            <Link href="/login" className="font-semibold text-neutral-950 hover:underline">
+            <Link href="/login" className="font-semibold text-white hover:underline">
               Log in
             </Link>
           </p>
@@ -245,7 +245,7 @@ export default function StartProjectPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-neutral-600">{label}</span>
+      <span className="mb-1.5 block text-xs font-medium text-white/55">{label}</span>
       {children}
     </label>
   );
@@ -264,7 +264,7 @@ function Input({
       {...props}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm outline-none ring-[#e10600] placeholder:text-neutral-400 focus:ring-2"
+      className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-sm text-white outline-none ring-[#e10600] placeholder:text-white/30 focus:ring-2"
     />
   );
 }
@@ -284,7 +284,7 @@ function Select({
       {...props}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm outline-none ring-[#e10600] focus:ring-2"
+      className="w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2.5 text-sm text-white outline-none ring-[#e10600] focus:ring-2"
     >
       {children}
     </select>
