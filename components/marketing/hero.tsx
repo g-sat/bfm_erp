@@ -72,10 +72,10 @@ export function MarketingHero() {
               Start a Project <ArrowRight size={16} />
             </Link>
             <Link
-              href="/start?role=creative"
+              href="/login"
               className="inline-flex items-center justify-center rounded-xl border border-neutral-200 bg-white px-5 py-3 text-sm font-semibold text-neutral-900 transition hover:border-neutral-300 hover:bg-neutral-50"
             >
-              Join as a Creator
+              Log in
             </Link>
           </motion.div>
 

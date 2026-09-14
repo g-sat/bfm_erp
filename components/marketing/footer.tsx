@@ -39,8 +39,8 @@ export function MarketingFooter() {
             <Link href="/dashboard" className="hover:text-white">
               Command Center
             </Link>
-            <Link href="/start?role=creative" className="hover:text-white">
-              Join as Creator
+            <Link href="/login" className="hover:text-white">
+              Log in
             </Link>
           </div>
         </div>
