@@ -405,8 +405,7 @@ export const LaserFlow: React.FC<Props> = ({
     mesh.frustumCulled = false;
     scene.add(mesh);
 
-    const clock = new THREE.Clock();
-    let prevTime = 0;
+    const timer = new THREE.Timer();
     let fade = hasFadedRef.current ? 1 : 0;
 
     const mouseTarget = new THREE.Vector2(0, 0);
@@ -511,13 +510,13 @@ export const LaserFlow: React.FC<Props> = ({
       lastFpsCheckRef.current = now;
     };
 
-    const animate = () => {
+    const animate = (timestamp: number) => {
       raf = requestAnimationFrame(animate);
       if (pausedRef.current || !inViewRef.current) return;
 
-      const t = clock.getElapsedTime();
-      const dt = Math.max(0, t - prevTime);
-      prevTime = t;
+      timer.update(timestamp);
+      const t = timer.getElapsed();
+      const dt = Math.max(0, timer.getDelta());
 
       const dtMs = dt * 1000;
       emaDtRef.current = emaDtRef.current * 0.9 + dtMs * 0.1;
@@ -547,7 +546,7 @@ export const LaserFlow: React.FC<Props> = ({
       adjustDprIfNeeded(performance.now());
     };
 
-    animate();
+    raf = requestAnimationFrame(animate);
 
     return () => {
       cancelAnimationFrame(raf);
@@ -560,6 +559,7 @@ export const LaserFlow: React.FC<Props> = ({
       canvas.removeEventListener('pointerleave', onLeave);
       canvas.removeEventListener('webglcontextlost', onCtxLost);
       canvas.removeEventListener('webglcontextrestored', onCtxRestored);
+      timer.dispose();
       geometry.dispose();
       material.dispose();
       renderer.dispose();
