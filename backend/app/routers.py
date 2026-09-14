@@ -52,6 +52,7 @@ from app.schemas import (
     PaymentOut,
     ProjectIn,
     ProjectOut,
+    PublicStartIn,
     QualityReviewIn,
     QualityReviewOut,
     ReviewIn,
@@ -90,6 +91,126 @@ def login_form(form_data: OAuth2PasswordRequestForm = Depends(), db: DbSession =
 @auth_router.get("/me", response_model=ApiResponse[UserOut])
 def me(user: CurrentUser):
     return ApiResponse(data=UserOut.model_validate(user))
+
+
+def _username_from_email(email: str) -> str:
+    base = "".join(ch for ch in email.split("@")[0].lower() if ch.isalnum() or ch in "._")[:24] or "user"
+    return base
+
+
+def _parse_team_size(value: Optional[str]) -> int:
+    if not value:
+        return 1
+    digits = "".join(ch for ch in value if ch.isdigit())
+    return int(digits[:4]) if digits else 1
+
+
+@api.post("/public/start", response_model=ApiResponse[TokenOut])
+def public_start(payload: PublicStartIn, db: DbSession):
+    """Public onboarding from the marketing site — no auth required."""
+    role = (payload.role or "").strip().lower()
+    if role not in {"business", "creative"}:
+        raise HTTPException(400, "Role must be business or creative")
+    email = payload.email.strip().lower()
+    if not email or not payload.password or len(payload.password) < 6:
+        raise HTTPException(400, "Valid email and password (6+ chars) required")
+    if db.query(User).filter(User.email == email).first():
+        raise HTTPException(400, "An account with this email already exists — please log in")
+
+    username = _username_from_email(email)
+    existing = db.query(User).filter(User.username == username).first()
+    if existing:
+        username = f"{username}{db.query(User).count() + 1}"
+
+    business_id = None
+    creator_id = None
+    full_name = payload.contact_name or payload.display_name or email.split("@")[0]
+
+    if role == "business":
+        if not payload.company_name or not payload.contact_name:
+            raise HTTPException(400, "Company name and contact name are required")
+        code = next_doc_no(db, "BUSINESS")
+        business = Business(
+            code=code,
+            name=payload.company_name.strip(),
+            industry=payload.industry,
+            contact_name=payload.contact_name.strip(),
+            email=email,
+            phone=payload.phone,
+            website=payload.website,
+            subscription="starter",
+            team_size=_parse_team_size(payload.team_size),
+        )
+        db.add(business)
+        db.flush()
+        business_id = business.id
+        full_name = payload.contact_name.strip()
+    else:
+        if not payload.display_name:
+            raise HTTPException(400, "Display name is required")
+        code = next_doc_no(db, "CREATOR")
+        creator = Creator(
+            code=code,
+            display_name=payload.display_name.strip(),
+            headline=payload.headline,
+            skills=payload.skills,
+            categories=payload.categories or "design",
+            availability="available",
+            location=payload.location,
+            is_verified=False,
+        )
+        db.add(creator)
+        db.flush()
+        creator_id = creator.id
+        full_name = payload.display_name.strip()
+
+    user = User(
+        username=username,
+        full_name=full_name,
+        email=email,
+        hashed_password=hash_password(payload.password),
+        role=role,
+        phone=payload.phone,
+        is_verified=True,
+        business_id=business_id,
+        creator_id=creator_id,
+    )
+    db.add(user)
+    db.flush()
+
+    if role == "business" and payload.project_title:
+        project = Project(
+            code=next_doc_no(db, "PROJECT"),
+            title=payload.project_title.strip(),
+            brief=payload.project_brief,
+            category=payload.project_category or "general",
+            status="intake",
+            priority="medium",
+            budget=Decimal(str(payload.project_budget or 0)),
+            business_id=business_id,
+            progress_pct=0,
+        )
+        db.add(project)
+
+    admin = db.query(User).filter(User.role == "admin").first()
+    if admin:
+        db.add(
+            Notification(
+                user_id=admin.id,
+                title="New workspace signup",
+                body=f"{full_name} joined as {role} ({email})",
+                channel="in_app",
+                link="/users",
+            )
+        )
+
+    db.commit()
+    db.refresh(user)
+    token = create_access_token({"sub": user.username, "uid": user.id, "role": user.role})
+    return ApiResponse(
+        message="Workspace created",
+        data=TokenOut(access_token=token, user=UserOut.model_validate(user)),
+    )
 
 
 @api.get("/company", response_model=ApiResponse[CompanyOut])

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BOLDFRAME ERP",
+  title: "BOLDFRAME — Creative work, managed",
   description: "The Operating System for Creative Services",
 };
 
@@ -39,7 +39,7 @@ const themeInitScript = `
 })();
 `;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"

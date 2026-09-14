@@ -1,11 +1,11 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { api, setToken } from "@/lib/api";
 import type { User } from "@/lib/types";
-import { Button, Card, Input, Label } from "@/components/ui";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 const DEMOS = [
   { label: "Admin", username: "admin", password: "admin123" },
@@ -41,52 +41,79 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top_left,#e10600_0%,#1a1a1a_42%,#000000_100%)] px-4">
-      <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:42px_42px]" />
-      <div className="absolute right-4 top-4 z-20">
-        <ThemeToggle />
-      </div>
-      <Card className="relative z-10 w-full max-w-md border-[var(--erp-border)] p-5 shadow-xl sm:p-8">
-        <div className="mb-6">
-          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[var(--erp-accent)] text-sm font-bold text-white">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-white px-4">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(225,6,0,0.12),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(0,0,0,0.05),transparent_45%)]" />
+      <div className="absolute left-4 top-4 z-20 sm:left-6 sm:top-6">
+        <Link href="/" className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#e10600] text-[11px] font-bold text-white">
             BF
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[var(--erp-ink)]">BOLDFRAME</h1>
-          <p className="mt-1 text-sm text-[var(--erp-muted)]">
-            The Operating System for Creative Services
-          </p>
-        </div>
-        <form className="space-y-4" onSubmit={onSubmit}>
-          <div>
-            <Label>Username</Label>
-            <Input value={username} onChange={(e) => setUsername(e.target.value)} required />
-          </div>
-          <div>
-            <Label>Password</Label>
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </div>
+          </span>
+          <span className="text-sm font-semibold tracking-[0.04em] text-neutral-950">BOLDFRAME</span>
+        </Link>
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative z-10 w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] sm:p-8"
+      >
+        <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">Welcome back</h1>
+        <p className="mt-1 text-sm text-neutral-600">Log in to your BoldFrame workspace.</p>
+
+        <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-medium text-neutral-600">Username</span>
+            <input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm outline-none ring-[#e10600] focus:ring-2"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-medium text-neutral-600">Password</span>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm outline-none ring-[#e10600] focus:ring-2"
+            />
+          </label>
           {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
-          </Button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-xl bg-[#e10600] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#c40500] disabled:opacity-60"
+          >
+            {loading ? "Signing in..." : "Log in"}
+          </button>
         </form>
+
         <div className="mt-5 grid grid-cols-2 gap-2">
           {DEMOS.map((d) => (
             <button
               key={d.username}
               type="button"
-              className="rounded-md border border-[var(--erp-border)] px-2 py-1.5 text-left text-xs hover:bg-[var(--erp-surface-2)]"
+              className="rounded-lg border border-neutral-200 px-2 py-1.5 text-left text-xs hover:bg-neutral-50"
               onClick={() => {
                 setUsername(d.username);
                 setPassword(d.password);
               }}
             >
-              <div className="font-medium">{d.label}</div>
-              <div className="text-[var(--erp-muted)]">{d.username}</div>
+              <div className="font-medium text-neutral-900">{d.label}</div>
+              <div className="text-neutral-500">{d.username}</div>
             </button>
           ))}
         </div>
-      </Card>
+
+        <p className="mt-5 text-center text-sm text-neutral-500">
+          New here?{" "}
+          <Link href="/start" className="font-semibold text-neutral-950 hover:underline">
+            Start a Project
+          </Link>
+        </p>
+      </motion.div>
     </div>
   );
 }

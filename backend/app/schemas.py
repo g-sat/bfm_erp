@@ -375,3 +375,26 @@ class DashboardOut(BaseModel):
     avg_progress: float = 0
     assignments_open: int = 0
     quality_pending: int = 0
+
+
+class PublicStartIn(BaseModel):
+    role: str  # business | creative
+    email: str
+    password: str
+    phone: Optional[str] = None
+    # business
+    company_name: Optional[str] = None
+    website: Optional[str] = None
+    industry: Optional[str] = None
+    team_size: Optional[str] = None
+    contact_name: Optional[str] = None
+    project_title: Optional[str] = None
+    project_category: Optional[str] = None
+    project_budget: Optional[float] = None
+    project_brief: Optional[str] = None
+    # creative
+    display_name: Optional[str] = None
+    headline: Optional[str] = None
+    skills: Optional[str] = None
+    categories: Optional[str] = None
+    location: Optional[str] = None
